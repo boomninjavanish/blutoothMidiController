@@ -1,3 +1,14 @@
+/*
+ * bluetoothMidiController.ino
+ * 2019 Matthew Dunlap
+ * 
+ * This project utilizes an Adafruit Feather 32u4 Bluefruit LE board (https://www.adafruit.com/product/2829)
+ * to allow a user to input notes on a piano-style keyboard wirelessly to a mobile phone or tablet. 
+ * Currently, as per my testing, MIDI over bluetooth LE is best supported on a device running iOS. However,
+ * it is my hopes that this will change in the future.
+ *
+ */
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
@@ -5,9 +16,12 @@
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 #include "Adafruit_BLEMIDI.h"
+#include "Adafruit_MCP23017.h"
 #include "BluefruitConfig.h"
-#include <Bounce2.h>
+#include "Bounce2mcp.h"
 
+// setup the bluetooth to only work with a certain firmware version
+//  update the firmware via the Adafruit Bluefruit LE Connect app on iOS and Android
 #define FACTORYRESET_ENABLE 1
 #define MINIMUM_FIRMWARE_VERSION "0.7.0"
 
@@ -15,19 +29,30 @@ Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_
 
 Adafruit_BLEMIDI midi(ble);
 
-// buttons to initialize from left to right
-const int NUMBER_OF_BUTTONS = 8;
-int buttonPin[NUMBER_OF_BUTTONS] = {12, 11, 10, 2, 9, 18, 5, 3};
+// define and init the MCP 23017 port expander objects
+Adafruit_MCP23017 mcp[2];
+#define addr1 0x00 // mcp0 I2C address
+#define addr2 0x01 // mcp1 I2C address
 
 // track if a note is on for each button
-bool buttonNoteOn[NUMBER_OF_BUTTONS] = {false, false, false, false, false, false, false, false};
+bool buttonNoteOn[2][16];
 
-// debouncer for buttons
-Bounce debouncer[NUMBER_OF_BUTTONS];
+// debouncers for buttons
+BounceMcp debouncer[2][16];
 
 // note and octave trackers; (OCTAVE * octaveMultiplier) + note = note in correct octave
 const int OCTAVE = 12;
-int note[NUMBER_OF_BUTTONS] = {0, 0, 12, 13, 14, 16, 17, 19}; // first two buttons are octave selections
+
+/* map the MIDI note number to each button on each extender
+ *  a zero indicates that it is not a button; 
+ *  4 and 5 map to the OCT - and + buttons respectively 
+ */
+int note[2][16] = {
+                    {12, 13, 14, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
+                    {30,  0,  0,  0,  4,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}
+};
+
+// track which octave we are in currently
 int octaveMultiplier = 4;
 const int MAX_NUMBER_OCTAVES = 7;
 
@@ -59,12 +84,37 @@ void disconnected(void){
 void setup() {
   Serial.begin(115200);
   
-  // setup buttons
-  for (int i=0; i<NUMBER_OF_BUTTONS; i++) {
-    pinMode(buttonPin[i], INPUT);
-    debouncer[i] = Bounce();
-    debouncer[i].attach(buttonPin[i]);
-    debouncer[i].interval(1);
+  // setup the port expanders
+  mcp[0].begin(addr1);
+  mcp[1].begin(addr2);
+  
+  /* Setup the buttons and LED
+   *  
+   *  All of the buttons are connected to both 23017 chips
+   *    C1 - D#2 are on mcp0 pins 0-15
+   *    E2 is on mcp1 pin 0
+   *    OCT - and + are on mcp1 pins 4 and 5 respectively
+   *    The RBG LED pins on mcp1 are: Red = 8; Blue = 7; Green = 6
+   */
+  for (int i = 0; i < 2; i++){
+    for (int j = 0; j < 16; j++){
+
+      // initialize the button pressed tracker to false
+      buttonNoteOn[i][j] = false;
+
+      // initialize the debouncer
+      debouncer[i][j] = BounceMcp();
+      
+      int currentPin = note[i][j];
+      
+      // set pins for LED to OUTPUT and set debouncer for buttons
+      if ( currentPin == 4 || currentPin == 5 ){
+        mcp[i].pinMode(j, OUTPUT);
+      } else {
+        mcp[i].pinMode(j, INPUT);
+        debouncer[i][j].attach(mcp[i], j, 1); // expander, pin, interval
+      }
+    }
   }
   
   // setup bluetooth
@@ -99,6 +149,7 @@ void setup() {
   }
   
   ble.verbose(false);
+  
 }
 
 void loop() {
@@ -115,48 +166,50 @@ void loop() {
 }
 
 void pollButtons(){
+  for (int i=0; i<2; i++) {
+    for (int j=0; j<16; j++) {
+      // update the state of the buttons
+      debouncer[i][j].update();
+      
+      // calculate the current note
+      int currentNote = (OCTAVE * octaveMultiplier) + note[i][j];
+  
+      // read the buttons
+      int button = debouncer[i][j].read();
 
-  for (int i=0; i<NUMBER_OF_BUTTONS; i++) {
-    // update the state of the button
-    debouncer[i].update();
-
-    // calculate the current note
-    int currentNote = (OCTAVE * octaveMultiplier) + note[i];
-
-    // read the button
-    int button = debouncer[i].read();
-
-    if (button == HIGH) {
-       // first two buttons are the octave buttons
-      if (i == 0){
-        // lower an octave
-        if (octaveMultiplier > 1) {
-          octaveMultiplier -= 1;
-        }
-      } else if(i == 1){
-        // raise an octave
-        if (octaveMultiplier < 7) {
-          octaveMultiplier += 1;
+      // if button is HIGH send note on; if LOW, send note off
+      if (button == HIGH) {
+        
+         // check if the button being pressed is an octave button
+        if (note[i][j] == 4){
+          // lower an octave
+          if (octaveMultiplier > 1) {
+            octaveMultiplier -= 1;
+          }
+        } else if(note[i][j] == 5){
+          // raise an octave
+          if (octaveMultiplier < 7) {
+            octaveMultiplier += 1;
+          }
+        } else {
+             
+           // send note on/off based on button state
+           if (buttonNoteOn[i][j] == false){
+            
+              // send the note on 
+              midi.send(0x90, currentNote, 0x64);
+              buttonNoteOn[i][j] = true;
+             // delay(DELAY_TIME);
+              Serial.print("Note: ");
+              Serial.println(currentNote);
+           } 
         }
       } else {
-         
-         // send note on/off based on button state
-         if (buttonNoteOn[i] == false){
-          
-            // send the note on 
-            midi.send(0x90, currentNote, 0x64);
-            buttonNoteOn[i] = true;
-           // delay(DELAY_TIME);
-            Serial.print("Note: ");
-            Serial.println(currentNote);
-            
-         } 
+         // send note off
+         midi.send(0x80, currentNote, 0x64);
+         buttonNoteOn[i][j] = false;
+         //delay(DELAY_TIME);
       }
-    } else {
-       // send note off
-       midi.send(0x80, currentNote, 0x64);
-       buttonNoteOn[i] = false;
-       //delay(DELAY_TIME);
     }
   }
 }
