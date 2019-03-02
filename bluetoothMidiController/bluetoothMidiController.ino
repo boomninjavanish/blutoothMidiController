@@ -112,7 +112,8 @@ void setup() {
         mcp[i].pinMode(j, OUTPUT);
       } else {
         mcp[i].pinMode(j, INPUT);
-        debouncer[i][j].attach(mcp[i], j, 1); // expander, pin, interval
+        mcp[i].pullUp(j,  HIGH);
+        debouncer[i][j].attach(mcp[i], j, 5); // expander, pin, interval
       }
     }
   }
