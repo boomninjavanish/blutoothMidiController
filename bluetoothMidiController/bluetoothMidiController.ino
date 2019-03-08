@@ -38,6 +38,9 @@ BounceMcp debouncer[16];
 // track if a note is on for each button
 bool buttonNoteOn[16];
 
+// track if octave light has been turned on
+bool lightOn = false;
+
 // note and octave trackers; (OCTAVE * octaveMultiplier) + note = note in correct octave
 const int OCTAVE = 12;
 
@@ -47,6 +50,12 @@ int octaveMultiplier = 5;
 // delay time in milliseconds after sending MIDI message
 const int DELAY_TIME = 0;
 
+// RGB LED pins
+const int RED_PIN = 10;
+const int GREEN_PIN = 11;
+const int BLUE_PIN = 12;
+
+// track if Bluetooth Module is connected
 bool isConnected = false;
 
 
@@ -81,10 +90,11 @@ void setup() {
   /* Setup the buttons and LED
    *  
    *  All of the buttons are connected to both 23017 chips
-   *    C1 - D#2 are on mcp0 pins 0-15
-   *    E2 is on mcp1 pin 0
-   *    OCT - and + are on mcp1 pins 4 and 5 respectively
-   *    The RBG LED pins on mcp1 are: Red = 8; Blue = 7; Green = 6
+   *    C1 - C2 are on mcp pins 0-12
+   *    OCT - and + are on mcp pins 14 and 15 respectively
+   *    An optional button is available on mcp pin 13
+   *    The RBG LED pins are on the microcontroller: 
+   *          Red = A0; Blue = A1; Green = A2
    */
   for (int i = 0; i < 16; i++){
     // initialize the button pressed tracker to false
@@ -98,6 +108,11 @@ void setup() {
     debouncer[i] = BounceMcp();
     debouncer[i].attach(mcp, i, 5);   
   }
+
+  // setup LED
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
   
   // setup bluetooth
   if ( !ble.begin(VERBOSE_MODE) )
@@ -139,12 +154,19 @@ void loop() {
   // interval for each scanning ~ 500ms (non blocking)
   ble.update(1);
 
-  // bail if not connected
-  if (! isConnected)
+  // bail if not connected; turn light on for the first time
+  if (! isConnected) {
+    octaveColor(0); // turn light off
+    lightOn == false;
     return;
+  } else if (! lightOn){
+    octaveColor(octaveMultiplier); // turn light on
+    lightOn == false;
+  }
+    
   
   pollButtons();
-  
+
 }
 
 void pollButtons(){
@@ -160,11 +182,13 @@ void pollButtons(){
         // lower an octave
         if (octaveMultiplier > 1) {
           octaveMultiplier -= 1;
+          octaveColor(octaveMultiplier);
         }
       } else if(i == 15 && debouncer[i].fell()){
         // raise an octave
         if (octaveMultiplier < 8) {
           octaveMultiplier += 1;
+          octaveColor(octaveMultiplier);
         }
       } else if( i < 14 ){ // button is piano key
         int buttonState = debouncer[i].read();
@@ -185,8 +209,42 @@ void pollButtons(){
     
           digitalWrite(13, LOW); // led off
         }
-      }
-       
-    }
-  
+      } 
+   }
+}
+
+void setColor(int red, int green, int blue){
+  digitalWrite(RED_PIN, red);
+  digitalWrite(GREEN_PIN, green);
+  digitalWrite(BLUE_PIN, blue);
+}
+
+void octaveColor(int octaveMultiplier){
+
+  switch (octaveMultiplier){
+    case 1 :
+      setColor(HIGH, LOW, LOW); // red
+
+    case 2 :
+      setColor(HIGH, HIGH, LOW); // yellow x
+      
+    case 3 :
+      setColor(LOW, HIGH, LOW); // green
+      
+    case 4 : 
+      setColor(HIGH, HIGH, HIGH); // white x
+      
+    case 5 : 
+      setColor(LOW, HIGH, HIGH); // aqua
+
+    case 6 : 
+      setColor(HIGH, LOW, HIGH); // purple
+
+    case 7 :
+      setColor(LOW, LOW, HIGH); // blue
+
+    default :
+      setColor(LOW, LOW, LOW); // off
+    
+  }
 }
