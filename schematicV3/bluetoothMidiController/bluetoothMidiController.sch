@@ -7,7 +7,7 @@ encoding utf-8
 Sheet 1 1
 Title "portaMid Bluetooth MIDI Controller"
 Date "2019-02-09"
-Rev "1"
+Rev "3"
 Comp "Dunlap.Media"
 Comment1 ""
 Comment2 ""

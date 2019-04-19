@@ -19,6 +19,7 @@
 #include "Adafruit_MCP23017.h"
 #include "BluefruitConfig.h"
 #include "Bounce2mcp.h"
+#include "Adafruit_NeoPixel.h"
 
 // setup the bluetooth to only work with a certain firmware version
 //  update the firmware via the Adafruit Bluefruit LE Connect app on iOS and Android
@@ -50,10 +51,13 @@ int octaveMultiplier = 5;
 // delay time in milliseconds after sending MIDI message
 const int DELAY_TIME = 0;
 
-// RGB LED pins
-const int RED_PIN = 10;
-const int GREEN_PIN = 11;
-const int BLUE_PIN = 12;
+// NeoPixel Vars
+const int NEOPIXEL_PIN = 6;
+Adafruit_NeoPixel pixel(1, NEOPIXEL_PIN, NEO_RGB + NEO_KHZ800);
+
+// track milliseconds to blink led for bluetooth not connected
+const long blinkInterval = 1000;
+unsigned long previousMillis = 0;
 
 // track if Bluetooth Module is connected
 bool isConnected = false;
@@ -83,6 +87,12 @@ void setup() {
 
   // setup the built-in light
   pinMode(13, OUTPUT);
+
+  // setup the neopixel
+  pixel.begin();
+  octaveColor(-1); // set to white
+  pixel.setBrightness(10);
+  pixel.show(); // initialize to brightness
   
   // setup the port expanders
   mcp.begin();
@@ -108,11 +118,6 @@ void setup() {
     debouncer[i] = BounceMcp();
     debouncer[i].attach(mcp, i, 5);   
   }
-
-  // setup LED
-  pinMode(RED_PIN, OUTPUT);
-  pinMode(GREEN_PIN, OUTPUT);
-  pinMode(BLUE_PIN, OUTPUT);
   
   // setup bluetooth
   if ( !ble.begin(VERBOSE_MODE) )
@@ -128,6 +133,8 @@ void setup() {
     if ( ! ble.factoryReset() ) {
       error(F("Couldn't factory reset"));
     }
+    // set the Bluetooth name// set the Bluetooth name
+    ble.sendCommandCheckOK("AT+GAPDEVNAME=portaMid");
   }
    ble.echo(false);
 
@@ -156,12 +163,27 @@ void loop() {
 
   // bail if not connected; turn light on for the first time
   if (! isConnected) {
-    octaveColor(0); // turn light off
-    lightOn == false;
+    // blink LED blue to indicate bluetooth requires pairing
+    unsigned long currentMillis = millis();
+
+    if (currentMillis - previousMillis >= blinkInterval) {
+      previousMillis = currentMillis;
+      if (!lightOn){
+        octaveColor(6); // turn light blue
+        pixel.show();
+        lightOn = true;      
+      } else {
+        pixel.clear();
+        pixel.show();
+        lightOn = false;
+      }
+    }
+    
+    
+    
     return;
-  } else if (! lightOn){
+  } else {
     octaveColor(octaveMultiplier); // turn light on
-    lightOn == false;
   }
     
   
@@ -213,38 +235,47 @@ void pollButtons(){
    }
 }
 
-void setColor(int red, int green, int blue){
-  digitalWrite(RED_PIN, red);
-  digitalWrite(GREEN_PIN, green);
-  digitalWrite(BLUE_PIN, blue);
-}
-
 void octaveColor(int octaveMultiplier){
-
   switch (octaveMultiplier){
+    case 0 :
+       pixel.clear(); // off
+    
     case 1 :
-      setColor(HIGH, LOW, LOW); // red
+      pixel.setPixelColor(0, 255, 0, 0); // red
+      break;
 
     case 2 :
-      setColor(HIGH, HIGH, LOW); // yellow x
+      pixel.setPixelColor(0, 255, 127, 0); // orange
+      break;
       
     case 3 :
-      setColor(LOW, HIGH, LOW); // green
+      pixel.setPixelColor(0, 255, 255, 0); // yellow
+      break;
       
     case 4 : 
-      setColor(HIGH, HIGH, HIGH); // white x
+      pixel.setPixelColor(0, 0, 230, 0); // green
+      break;
       
     case 5 : 
-      setColor(LOW, HIGH, HIGH); // aqua
+      pixel.setPixelColor(0, 0, 255, 255); // aqua
+      break;
 
     case 6 : 
-      setColor(HIGH, LOW, HIGH); // purple
+      pixel.setPixelColor(0, 0, 42, 255); // blue
+      break;
 
     case 7 :
-      setColor(LOW, LOW, HIGH); // blue
+      pixel.setPixelColor(0, 221, 51, 255); // purple
+      break;
+
+    case 8: 
+      pixel.setPixelColor(0, 255, 25, 255); // fuchsia
+      break;
 
     default :
-      setColor(LOW, LOW, LOW); // off
+      pixel.setPixelColor(0, 255, 255, 255); // white
     
   }
+
+  pixel.show();
 }
