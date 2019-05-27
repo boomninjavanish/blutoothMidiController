@@ -1,0 +1,43 @@
+Status Light
+	
+	Blinking Blue:
+		Bluetooth is ready for 	pairing
+
+	Solid Color:
+		Ready for input. Color indicates which octave is selected.
+
+	No Light:
+		Device is turned off.
+
+Octave Selection
+
+	Changes the octave that is played by the keyboard
+
+Power Switch
+
+	Switches the power on the unit on or off
+	
+
+Phone Mount Connector
+
+	Mates with phone mounting device.
+
+Option Button
+
+Keyboard
+	Press to send MIDI notes over bluetooth. 
+
+USB Charging
+	Connect to charge device. Amber light near connector idicates that device is charging.
+	
+Bluetooth Pairing
+	When the device is firsat turned on, the status light will blink blue to indicate it is ready for pairing. Use the following instructions to pair with Garageband on iOS. Note that device will work on any app that supports Bluetooth MIDI on iOS and device only has to be paired each time it powered on. 
+	
+	1. Tap on the settings icon. (Looks like a wrench.)
+	2. Tap on the "Advanced" menu option.
+	3. Tap "Bluetooth MIDI Devices" menu option.
+	4. The device should appear as "portaMid" in the device list. Tap to connect.
+	5. Tap anywhere off of the menu to continue. Add an instrument in Garageband and enjoy. :)
+
+
+
