@@ -1,7 +1,10 @@
 # portaMid
 ![portaMid without phone docked](https://github.com/boomninjavanish/media/raw/master/portaMid/portaMidFinal.JPEG)
+
 [Click to view video of portaMid in use.](https://vimeo.com/428870643)
+
 [Click here to download the manual.](https://github.com/boomninjavanish/portaMid/raw/master/PortaMidUserManual.pdf)
+
 The portaMid keyboard is a MIDI keyboard that works over the Bluetooth Low Energy (BLE) protocol which allows one to control music apps on any  Apple iOS device. The device contains a 500 mAh lithium polymer rechargeable battery which lasts for many hours of use. 
 
 The one octave of piano style keys are soft to the touch but contain tactile feedback so that the user knows when the key has been pressed. Utilizing the octave  keys, the user may lower or raise the octave in which the piano-style keys play. The LED represents the octave selection via different color output.
@@ -14,15 +17,18 @@ I chose to create a portable MIDI controller that will allow one to dock a phone
 ## Creation
 ### Board
 A circuit board was designed using KiCAD and is centered around the Adafruit Feather 32u4 Bluefruit LE development microcontroller. The PCB design may be sent to a company such as OSH Park or PCB Way to be printed. The following is a bill of materials for the project (sans circuit board and case):
-- Adafruit Feather 32u4 Bluefruit LE Microcontroller x 1
-- Microchip MCP2307 I2C I/O expander (SPDIP) x 1
-- Adafruit NeoPixel Through-Hole 5mm LED x 1
-- 12mm tactile switches x 13
-- 5mm tactile switches x 3
-- 100nF ceramic capacitor x 1
-- 2mm DPDT surface mounted slide switch (DigiKey PN: 401-2002-1-ND) x 1
-- 1Kohm SMD 1206 resistor x 1
-- 3.7V/500mAh Lithium Ion Polymer Battery with 2-pin JST-PH connector
+
+QTY | Part
+---- | ------
+1 | Adafruit Feather 32u4 Bluefruit LE Microcontroller
+1 | Microchip MCP2307 I2C I/O expander (SPDIP)
+1 | Adafruit NeoPixel Through-Hole 5mm LED
+13 | 12mm tactile switches
+3 |  5mm tactile switches
+1 | 100nF ceramic capacitor
+1 | 2mm DPDT surface mounted slide switch (DigiKey PN: 401-2002-1-ND)
+1 | 1Kohm SMD 1206 resistor
+1 | 3.7V/500mAh Lithium Ion Polymer Battery with 2-pin JST-PH connector
 
 ### Case
 The final case was modeled in Fusion 360 and was designed to accept an existing phone mount that was found in [Thingiverse](https://www.thingiverse.com/thing:1313336). In order to ensure that the dimensions were correct, the board was exported from KiCAD as a STEP file. Other components such as switches, USB ports, and LEDs were imported into Fusion from a website called [GrabCAD](https://grabcad.com). This website is a community website similar to Thingiverse, but contains mostly engineering components. 
