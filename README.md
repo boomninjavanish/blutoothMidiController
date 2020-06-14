@@ -12,7 +12,7 @@ The one octave of piano style keys are soft to the touch but contain tactile fee
 A removable phone mount allows for use on the go for different sizes of iPhone. In fact, every iPhone since the 4S is supported by the device. Most music apps support MIDI over BLE natively and connect to the portaMid with no configuration required: just connect and use. An example of set-up with the GarageBand app may be found in the user manual.
 
 ## Motivation
-I chose to create a portable MIDI controller that will allow one to dock a phone and use like a gaming controller. Often, I create music on train trips using my and hate inputting notes on the tiny keyboards presented on screen.
+I chose to create a portable MIDI controller that will allow one to dock a phone and use like a gaming controller. Often, I create music on train trips using my phone and hate inputting notes on the tiny keyboards presented on screen.
 
 ## Creation
 ### Board
