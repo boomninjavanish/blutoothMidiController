@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name bluetoothMidiController-rescue)(type Legacy)(uri ${KIPRJMOD}/bluetoothMidiController-rescue.lib)(options "")(descr ""))
-)
