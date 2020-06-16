@@ -1,6 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:bluetoothMidiController-cache
-EELAYER 26 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 8268 11693 portrait
 encoding utf-8
@@ -734,7 +733,7 @@ U 1 1 5CA6965D
 P 3850 1200
 F 0 "J1" V 3900 1150 50  0000 R CNN
 F 1 "To Feather" V 4000 1300 50  0000 R CNN
-F 2 "Connector_PinHeader_2.00mm:PinHeader_1x06_P2.00mm_Vertical" H 3850 1200 50  0001 C CNN
+F 2 "Connector_Wire:SolderWire-0.5sqmm_1x06_P4.8mm_D0.9mm_OD2.3mm" H 3850 1200 50  0001 C CNN
 F 3 "~" H 3850 1200 50  0001 C CNN
 	1    3850 1200
 	0    -1   -1   0   
@@ -788,7 +787,7 @@ U 1 1 5CBC1931
 P 5750 2550
 F 0 "R3" V 5543 2550 50  0000 C CNN
 F 1 "4.7K" V 5634 2550 50  0000 C CNN
-F 2 "" V 5680 2550 50  0001 C CNN
+F 2 "Resistor_SMD:R_1206_3216Metric_Pad1.42x1.75mm_HandSolder" V 5680 2550 50  0001 C CNN
 F 3 "~" H 5750 2550 50  0001 C CNN
 	1    5750 2550
 	0    1    1    0   
@@ -799,7 +798,7 @@ U 1 1 5CBC1ACE
 P 5750 2200
 F 0 "R2" V 5543 2200 50  0000 C CNN
 F 1 "4.7K" V 5634 2200 50  0000 C CNN
-F 2 "" V 5680 2200 50  0001 C CNN
+F 2 "Resistor_SMD:R_1206_3216Metric_Pad1.42x1.75mm_HandSolder" V 5680 2200 50  0001 C CNN
 F 3 "~" H 5750 2200 50  0001 C CNN
 	1    5750 2200
 	0    1    1    0   
