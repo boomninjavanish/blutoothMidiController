@@ -28,7 +28,7 @@ QTY | Part
 1 | 100nF ceramic capacitor
 1 | 2mm DPDT surface mounted slide switch (DigiKey PN: 401-2002-1-ND)
 1 | 1K SMD 1206 resistor
-1 | 4.7K SMD 1206 resistor
+2 | 4.7K SMD 1206 resistor
 1 | 3.7V/500mAh Lithium Ion Polymer Battery with 2-pin JST-PH connector
 
 ### Case
